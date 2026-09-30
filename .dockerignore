@@ -1,0 +1,16 @@
+node_modules
+dist
+dist-ssr
+.git
+.gitignore
+.DS_Store
+**/.DS_Store
+*.local
+*.log
+npm-debug.log*
+.vscode
+.idea
+docs
+Dockerfile
+.dockerignore
+README.md

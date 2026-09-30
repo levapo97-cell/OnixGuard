@@ -1,0 +1,142 @@
+/* Fuentes: Geist (UI) y Geist Mono (horas, comandos, logs) — cargadas por CSS via fontsource */
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  OnixGuard — Sistema visual (PLAN §10)
+  Tokens EXACTOS. El panel es oscuro por defecto.
+*/
+:root {
+  /* Superficies */
+  --onix-bg: #1a1a1a; /* fondo */
+  --onix-card: #212121; /* tarjetas */
+  --onix-border: #2e2e2e; /* bordes */
+
+  /* Texto */
+  --onix-text: #ededed; /* texto principal */
+  --onix-text-muted: #a0a0a0; /* texto secundario */
+
+  /* Marca / acento (solo marca, botón principal y etapa activa) */
+  --onix-brand: #ff3b4e;
+
+  /* Estados (fondo / texto) */
+  --onix-state-working-bg: #1f3321;
+  --onix-state-working-fg: #7acb7f;
+  --onix-state-error-bg: #3a1e1e;
+  --onix-state-error-fg: #ff8080;
+  --onix-state-repeat-bg: #2e2540;
+  --onix-state-repeat-fg: #c4a7ff;
+  --onix-state-waiting-bg: #3a2f17;
+  --onix-state-waiting-fg: #f0c060;
+  --onix-state-idle-bg: #2a2a2a;
+  --onix-state-idle-fg: #bdbdbd;
+
+  /* Radios: 16px tarjetas / 10px botones */
+  --radius: 0.625rem; /* 10px — botones, inputs (base shadcn) */
+  --radius-card: 1rem; /* 16px — tarjetas */
+
+  /* Tokens semánticos shadcn/ui mapeados a los tokens OnixGuard */
+  --background: var(--onix-bg);
+  --foreground: var(--onix-text);
+  --card: var(--onix-card);
+  --card-foreground: var(--onix-text);
+  --popover: var(--onix-card);
+  --popover-foreground: var(--onix-text);
+  --primary: var(--onix-brand);
+  --primary-foreground: #ffffff;
+  --secondary: #2a2a2a;
+  --secondary-foreground: var(--onix-text);
+  --muted: #2a2a2a;
+  --muted-foreground: var(--onix-text-muted);
+  --accent: #2a2a2a;
+  --accent-foreground: var(--onix-text);
+  --destructive: var(--onix-state-error-fg);
+  --border: var(--onix-border);
+  --input: var(--onix-border);
+  --ring: var(--onix-brand);
+}
+
+/* Modo oscuro explícito = mismo tema (panel oscuro-first) */
+.dark {
+  --background: var(--onix-bg);
+  --foreground: var(--onix-text);
+  --card: var(--onix-card);
+  --card-foreground: var(--onix-text);
+  --popover: var(--onix-card);
+  --popover-foreground: var(--onix-text);
+  --primary: var(--onix-brand);
+  --primary-foreground: #ffffff;
+  --secondary: #2a2a2a;
+  --secondary-foreground: var(--onix-text);
+  --muted: #2a2a2a;
+  --muted-foreground: var(--onix-text-muted);
+  --accent: #2a2a2a;
+  --accent-foreground: var(--onix-text);
+  --destructive: var(--onix-state-error-fg);
+  --border: var(--onix-border);
+  --input: var(--onix-border);
+  --ring: var(--onix-brand);
+}
+
+@theme inline {
+  /* Colores semánticos -> utilidades (bg-background, text-foreground, border-border, ...) */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Marca y estados como utilidades directas (bg-brand, text-state-working-fg, ...) */
+  --color-brand: var(--onix-brand);
+  --color-state-working: var(--onix-state-working-bg);
+  --color-state-working-fg: var(--onix-state-working-fg);
+  --color-state-error: var(--onix-state-error-bg);
+  --color-state-error-fg: var(--onix-state-error-fg);
+  --color-state-repeat: var(--onix-state-repeat-bg);
+  --color-state-repeat-fg: var(--onix-state-repeat-fg);
+  --color-state-waiting: var(--onix-state-waiting-bg);
+  --color-state-waiting-fg: var(--onix-state-waiting-fg);
+  --color-state-idle: var(--onix-state-idle-bg);
+  --color-state-idle-fg: var(--onix-state-idle-fg);
+
+  /* Radios */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-card: var(--radius-card);
+
+  /* Tipografía */
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
