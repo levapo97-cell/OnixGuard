@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import OficinaPixel from '@/components/OficinaPixel'
 import {
   type Activity,
   fetchRecent,
@@ -343,6 +344,7 @@ export default function Monitoreo() {
 
       <MetricsHeader overview={overview} />
       <StagesBar stages={stages} />
+      <OficinaPixel />
       <AgentsGrid agents={agents} />
 
       <section className="rounded-card border border-border bg-card">
