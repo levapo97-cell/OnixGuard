@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useState } from 'react'
 import Login from '@/components/Login'
+import Logs from '@/components/Logs'
 import Monitoreo from '@/components/Monitoreo'
 import Proyectos from '@/components/Proyectos'
 import Reportes from '@/components/Reportes'
@@ -7,7 +8,7 @@ import Tickets from '@/components/Tickets'
 import { Button } from '@/components/ui/button'
 import { getToken, logout, UNAUTHORIZED_EVENT } from '@/lib/auth'
 
-type View = 'monitoreo' | 'reportes' | 'tickets' | 'proyectos'
+type View = 'monitoreo' | 'reportes' | 'tickets' | 'proyectos' | 'logs'
 
 function App() {
   const [view, setView] = useState<View>('monitoreo')
@@ -56,6 +57,9 @@ function App() {
               <NavTab active={view === 'proyectos'} onClick={() => setView('proyectos')}>
                 Proyectos
               </NavTab>
+              <NavTab active={view === 'logs'} onClick={() => setView('logs')}>
+                Logs
+              </NavTab>
             </nav>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               Salir
@@ -69,8 +73,10 @@ function App() {
           <Reportes />
         ) : view === 'tickets' ? (
           <Tickets />
-        ) : (
+        ) : view === 'proyectos' ? (
           <Proyectos />
+        ) : (
+          <Logs />
         )}
       </div>
     </main>
