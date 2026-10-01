@@ -30,13 +30,16 @@ interface EventRow {
   is_error: boolean;
 }
 
-// RawEvent (parcial): lo que llega por WS dentro de {type:"event", data:<RawEvent>}.
+// CleanEvent (parcial): lo que llega por WS dentro de {type:"event", data:<CleanEvent>}
+// desde Fase 2 (onix-guard ya marcó is_error y redactó credenciales).
 interface RawEventLite {
   session?: string;
   agent_role?: string;
   hook?: string;
   ts?: string;
   tool?: string;
+  is_error?: boolean;
+  credentials?: unknown[];
   result?: { exit_code?: number };
 }
 
@@ -52,12 +55,15 @@ export function rowToActivity(r: EventRow): Activity {
 
 export function rawToActivity(d: RawEventLite): Activity {
   const exit = d.result?.exit_code;
+  // Prefiere is_error (lo marca onix-guard en el CleanEvent); cae a exit_code si no viene.
+  const isError =
+    typeof d.is_error === "boolean" ? d.is_error : typeof exit === "number" && exit !== 0;
   return {
     key: `${d.session ?? "?"}-${d.ts ?? ""}-${Math.random().toString(36).slice(2, 8)}`,
     ts: d.ts ?? new Date().toISOString(),
     agentRole: d.agent_role ?? "?",
     label: d.tool || d.hook || "evento",
-    isError: typeof exit === "number" && exit !== 0,
+    isError,
   };
 }
 
