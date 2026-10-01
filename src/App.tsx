@@ -1,8 +1,9 @@
 import { type ReactNode, useState } from 'react'
 import Monitoreo from '@/components/Monitoreo'
 import Reportes from '@/components/Reportes'
+import Tickets from '@/components/Tickets'
 
-type View = 'monitoreo' | 'reportes'
+type View = 'monitoreo' | 'reportes' | 'tickets'
 
 function App() {
   const [view, setView] = useState<View>('monitoreo')
@@ -27,10 +28,13 @@ function App() {
             <NavTab active={view === 'reportes'} onClick={() => setView('reportes')}>
               Reportes
             </NavTab>
+            <NavTab active={view === 'tickets'} onClick={() => setView('tickets')}>
+              Tickets
+            </NavTab>
           </nav>
         </header>
 
-        {view === 'monitoreo' ? <Monitoreo /> : <Reportes />}
+        {view === 'monitoreo' ? <Monitoreo /> : view === 'reportes' ? <Reportes /> : <Tickets />}
       </div>
     </main>
   )
