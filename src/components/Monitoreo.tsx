@@ -207,7 +207,7 @@ function MetricTile({
 }
 
 function MetricsHeader({ overview }: { overview: Overview | null }) {
-  const total = overview?.total_stages ?? 12
+  const total = overview?.total_stages ?? 0
   const current = overview?.current_stage ?? 0
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
@@ -221,40 +221,47 @@ function MetricsHeader({ overview }: { overview: Overview | null }) {
   )
 }
 
-// ── Bloque 2: barra de 12 etapas ──────────────────────────────────────────────
-function stageClasses(status: Stage['status']): string {
+// ── Bloque 2: plan de ejecución (fases DINÁMICAS del ticket, con sus nombres) ──
+function stageClasses(status: string): string {
   switch (status) {
     case 'hecha':
       return 'bg-state-working text-state-working-fg'
     case 'activa':
       return 'bg-brand text-white'
-    default:
+    case 'bloqueada':
+      return 'bg-state-error text-state-error-fg'
+    default: // pendiente
       return 'bg-state-idle text-state-idle-fg'
   }
 }
 
 function StagesBar({ stages }: { stages: Stage[] }) {
-  const TOTAL = 12
-  // Normaliza a 12 segmentos aunque el gateway devuelva menos/ninguno.
-  const segments: Stage[] = Array.from({ length: TOTAL }, (_, i) => {
-    const found = stages.find((s) => s.number === i + 1)
-    return found ?? { number: i + 1, name: `Etapa ${i + 1}`, status: 'pendiente' }
-  })
+  // Pinta EXACTAMENTE las fases reales del plan (no un número fijo).
+  const segments = [...stages].sort((a, b) => a.number - b.number)
 
   return (
     <section className="rounded-card border border-border bg-card p-4">
-      <h2 className="mb-3 text-sm font-medium text-muted-foreground">Etapas (12)</h2>
-      <div className="grid grid-cols-6 gap-2 sm:grid-cols-12">
-        {segments.map((s) => (
-          <div
-            key={s.number}
-            title={`${s.number}. ${s.name} — ${s.status}`}
-            className={`flex h-9 items-center justify-center rounded-[8px] font-mono text-xs font-medium ${stageClasses(s.status)}`}
-          >
-            {s.number}
-          </div>
-        ))}
-      </div>
+      <h2 className="mb-3 text-sm font-medium text-muted-foreground">
+        Plan de ejecución {segments.length > 0 && <span className="font-mono">({segments.length} fases)</span>}
+      </h2>
+      {segments.length === 0 ? (
+        <p className="py-4 text-center text-sm text-muted-foreground">
+          Sin plan todavía — crea un ticket y el agente registra el plan.
+        </p>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {segments.map((s) => (
+            <div
+              key={s.number}
+              title={`${s.number}. ${s.name} — ${s.status}`}
+              className={`flex items-center gap-2 rounded-[8px] px-3 py-2 text-xs font-medium ${stageClasses(s.status)}`}
+            >
+              <span className="font-mono opacity-80">{s.number}</span>
+              <span className="max-w-[220px] truncate">{s.name}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   )
 }
