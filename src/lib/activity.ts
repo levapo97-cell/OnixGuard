@@ -1,12 +1,17 @@
 // Cliente de actividad en vivo (Fase 1): carga inicial por REST + stream por WebSocket.
 // Apunta a onix-gateway. En dev, por defecto http://localhost:8080 (override con VITE_GATEWAY_URL).
 
+import { authHeaders, getToken, handleUnauthorized } from "@/lib/auth";
+
 export const GATEWAY_URL: string =
   (import.meta.env.VITE_GATEWAY_URL as string | undefined) ?? "http://localhost:8080";
 
 export function wsURL(): string {
   const u = new URL("/ws", GATEWAY_URL);
   u.protocol = u.protocol === "https:" ? "wss:" : "ws:";
+  // El WS exige el token por query param: ws://host/ws?token=<token>.
+  const t = getToken();
+  if (t) u.searchParams.set("token", t);
   return u.toString();
 }
 
@@ -68,7 +73,10 @@ export function rawToActivity(d: RawEventLite): Activity {
 }
 
 export async function fetchRecent(): Promise<Activity[]> {
-  const res = await fetch(new URL("/api/events", GATEWAY_URL).toString());
+  const res = await fetch(new URL("/api/events", GATEWAY_URL).toString(), {
+    headers: { ...authHeaders() },
+  });
+  if (res.status === 401) handleUnauthorized();
   if (!res.ok) throw new Error(`/api/events ${res.status}`);
   const rows = (await res.json()) as EventRow[];
   return rows.map(rowToActivity);

@@ -1,12 +1,33 @@
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
+import Login from '@/components/Login'
 import Monitoreo from '@/components/Monitoreo'
+import Proyectos from '@/components/Proyectos'
 import Reportes from '@/components/Reportes'
 import Tickets from '@/components/Tickets'
+import { Button } from '@/components/ui/button'
+import { getToken, logout, UNAUTHORIZED_EVENT } from '@/lib/auth'
 
-type View = 'monitoreo' | 'reportes' | 'tickets'
+type View = 'monitoreo' | 'reportes' | 'tickets' | 'proyectos'
 
 function App() {
   const [view, setView] = useState<View>('monitoreo')
+  const [authed, setAuthed] = useState<boolean>(() => Boolean(getToken()))
+
+  // Vuelve al login si el token falta o expira (401 en cualquier fetch/WS).
+  useEffect(() => {
+    const onUnauthorized = () => setAuthed(false)
+    window.addEventListener(UNAUTHORIZED_EVENT, onUnauthorized)
+    return () => window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized)
+  }, [])
+
+  function handleLogout() {
+    logout()
+    setAuthed(false)
+  }
+
+  if (!authed) {
+    return <Login onSuccess={() => setAuthed(true)} />
+  }
 
   return (
     <main className="min-h-screen bg-background p-4 text-foreground sm:p-6">
@@ -21,20 +42,36 @@ function App() {
             </h1>
           </div>
 
-          <nav className="flex items-center gap-1 rounded-[10px] border border-border bg-card p-1">
-            <NavTab active={view === 'monitoreo'} onClick={() => setView('monitoreo')}>
-              Monitoreo
-            </NavTab>
-            <NavTab active={view === 'reportes'} onClick={() => setView('reportes')}>
-              Reportes
-            </NavTab>
-            <NavTab active={view === 'tickets'} onClick={() => setView('tickets')}>
-              Tickets
-            </NavTab>
-          </nav>
+          <div className="flex items-center gap-2">
+            <nav className="flex items-center gap-1 rounded-[10px] border border-border bg-card p-1">
+              <NavTab active={view === 'monitoreo'} onClick={() => setView('monitoreo')}>
+                Monitoreo
+              </NavTab>
+              <NavTab active={view === 'reportes'} onClick={() => setView('reportes')}>
+                Reportes
+              </NavTab>
+              <NavTab active={view === 'tickets'} onClick={() => setView('tickets')}>
+                Tickets
+              </NavTab>
+              <NavTab active={view === 'proyectos'} onClick={() => setView('proyectos')}>
+                Proyectos
+              </NavTab>
+            </nav>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              Salir
+            </Button>
+          </div>
         </header>
 
-        {view === 'monitoreo' ? <Monitoreo /> : view === 'reportes' ? <Reportes /> : <Tickets />}
+        {view === 'monitoreo' ? (
+          <Monitoreo />
+        ) : view === 'reportes' ? (
+          <Reportes />
+        ) : view === 'tickets' ? (
+          <Tickets />
+        ) : (
+          <Proyectos />
+        )}
       </div>
     </main>
   )

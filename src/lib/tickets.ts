@@ -1,5 +1,6 @@
 // Cliente REST de Tickets (gateway). Reutiliza GATEWAY_URL de activity.ts.
 import { GATEWAY_URL } from '@/lib/activity'
+import { authHeaders, handleUnauthorized } from '@/lib/auth'
 
 // Estado de un ticket (flujo de ejecución).
 export type TicketStatus =
@@ -41,13 +42,19 @@ export interface TicketDetail {
 }
 
 export async function listTickets(): Promise<TicketListItem[]> {
-  const res = await fetch(new URL('/api/tickets', GATEWAY_URL).toString())
+  const res = await fetch(new URL('/api/tickets', GATEWAY_URL).toString(), {
+    headers: { ...authHeaders() },
+  })
+  if (res.status === 401) handleUnauthorized()
   if (!res.ok) throw new Error(`/api/tickets ${res.status}`)
   return (await res.json()) as TicketListItem[]
 }
 
 export async function getTicket(id: string): Promise<TicketDetail> {
-  const res = await fetch(new URL(`/api/tickets/${id}`, GATEWAY_URL).toString())
+  const res = await fetch(new URL(`/api/tickets/${id}`, GATEWAY_URL).toString(), {
+    headers: { ...authHeaders() },
+  })
+  if (res.status === 401) handleUnauthorized()
   if (!res.ok) throw new Error(`/api/tickets/${id} ${res.status}`)
   return (await res.json()) as TicketDetail
 }
@@ -55,9 +62,10 @@ export async function getTicket(id: string): Promise<TicketDetail> {
 export async function createTicket(title: string, body: string): Promise<{ id: string }> {
   const res = await fetch(new URL('/api/tickets', GATEWAY_URL).toString(), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ title, body, source: 'plataforma' }),
   })
+  if (res.status === 401) handleUnauthorized()
   if (!res.ok) throw new Error(`/api/tickets ${res.status}`)
   return (await res.json()) as { id: string }
 }

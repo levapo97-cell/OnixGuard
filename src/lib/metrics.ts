@@ -2,6 +2,7 @@
 // Reutiliza GATEWAY_URL de activity.ts (http://localhost:8080 por defecto).
 
 import { GATEWAY_URL } from '@/lib/activity'
+import { authHeaders, handleUnauthorized } from '@/lib/auth'
 
 // GET /api/overview
 export interface Overview {
@@ -37,7 +38,10 @@ export interface Agent {
 }
 
 async function getJSON<T>(path: string): Promise<T> {
-  const res = await fetch(new URL(path, GATEWAY_URL).toString())
+  const res = await fetch(new URL(path, GATEWAY_URL).toString(), {
+    headers: { ...authHeaders() },
+  })
+  if (res.status === 401) handleUnauthorized()
   if (!res.ok) throw new Error(`${path} ${res.status}`)
   return (await res.json()) as T
 }

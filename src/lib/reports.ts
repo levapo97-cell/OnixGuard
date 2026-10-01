@@ -1,5 +1,6 @@
 // Cliente REST de Reportes (gateway). Reutiliza GATEWAY_URL de activity.ts.
 import { GATEWAY_URL } from '@/lib/activity'
+import { authHeaders, handleUnauthorized } from '@/lib/auth'
 
 export type ReportStatus = 'espera' | 'aprobado' | 'cambios' | 'respondido'
 
@@ -41,13 +42,19 @@ export interface ReportDetail {
 export type RespondAction = 'aprobar' | 'cambios' | 'responder'
 
 export async function fetchReports(): Promise<ReportListItem[]> {
-  const res = await fetch(new URL('/api/reports', GATEWAY_URL).toString())
+  const res = await fetch(new URL('/api/reports', GATEWAY_URL).toString(), {
+    headers: { ...authHeaders() },
+  })
+  if (res.status === 401) handleUnauthorized()
   if (!res.ok) throw new Error(`/api/reports ${res.status}`)
   return (await res.json()) as ReportListItem[]
 }
 
 export async function fetchReport(id: string): Promise<ReportDetail> {
-  const res = await fetch(new URL(`/api/reports/${id}`, GATEWAY_URL).toString())
+  const res = await fetch(new URL(`/api/reports/${id}`, GATEWAY_URL).toString(), {
+    headers: { ...authHeaders() },
+  })
+  if (res.status === 401) handleUnauthorized()
   if (!res.ok) throw new Error(`/api/reports/${id} ${res.status}`)
   return (await res.json()) as ReportDetail
 }
@@ -59,9 +66,10 @@ export async function respondReport(
 ): Promise<void> {
   const res = await fetch(new URL(`/api/reports/${id}/respond`, GATEWAY_URL).toString(), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify(message !== undefined ? { action, message } : { action }),
   })
+  if (res.status === 401) handleUnauthorized()
   if (!res.ok) throw new Error(`/api/reports/${id}/respond ${res.status}`)
 }
 
