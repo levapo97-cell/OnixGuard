@@ -4,11 +4,12 @@ import Logs from '@/components/Logs'
 import Monitoreo from '@/components/Monitoreo'
 import Proyectos from '@/components/Proyectos'
 import Reportes from '@/components/Reportes'
+import Sesiones from '@/components/Sesiones'
 import Tickets from '@/components/Tickets'
 import { Button } from '@/components/ui/button'
 import { getToken, logout, UNAUTHORIZED_EVENT } from '@/lib/auth'
 
-type View = 'monitoreo' | 'reportes' | 'tickets' | 'proyectos' | 'logs'
+type View = 'monitoreo' | 'reportes' | 'tickets' | 'proyectos' | 'logs' | 'sesiones'
 
 function App() {
   const [view, setView] = useState<View>('monitoreo')
@@ -60,6 +61,9 @@ function App() {
               <NavTab active={view === 'logs'} onClick={() => setView('logs')}>
                 Logs
               </NavTab>
+              <NavTab active={view === 'sesiones'} onClick={() => setView('sesiones')}>
+                Sesiones
+              </NavTab>
             </nav>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               Salir
@@ -75,8 +79,10 @@ function App() {
           <Tickets />
         ) : view === 'proyectos' ? (
           <Proyectos />
-        ) : (
+        ) : view === 'logs' ? (
           <Logs />
+        ) : (
+          <Sesiones />
         )}
       </div>
     </main>
