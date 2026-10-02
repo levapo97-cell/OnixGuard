@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { wsURL } from '@/lib/activity'
 import {
@@ -11,6 +11,7 @@ import {
   stageStatusClasses,
   ticketStatusClasses,
   ticketStatusLabel,
+  uploadAttachment,
 } from '@/lib/tickets'
 
 function fmtDate(iso: string): string {
@@ -335,12 +336,97 @@ function Detail({ ticketId }: { ticketId: string | null }) {
         )}
       </div>
 
+      {/* Adjuntar archivo */}
+      <AttachmentUploader ticketId={ticket.id} onUploaded={load} />
+
       {/* Nota aclaratoria sobre aprobación */}
       <p className="rounded-[10px] border border-state-waiting bg-state-waiting px-3 py-2 text-xs text-state-waiting-fg">
         La aprobación del plan se hace en la pestaña Reportes (el plan llega como un reporte "Plan
         de ejecución").
       </p>
     </section>
+  )
+}
+
+function AttachmentUploader({
+  ticketId,
+  onUploaded,
+}: {
+  ticketId: string
+  onUploaded: () => Promise<void>
+}) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [file, setFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const submit = async () => {
+    if (!file) {
+      setError('Selecciona un archivo primero.')
+      return
+    }
+    setUploading(true)
+    setMessage(null)
+    setError(null)
+    try {
+      const res = await uploadAttachment(ticketId, file)
+      if (!res.ok) {
+        setError(res.error ?? 'No se pudo subir el archivo.')
+        return
+      }
+      const name = res.filename ?? file.name
+      let msg = `Archivo ${name} adjuntado`
+      if (res.ingested_text) {
+        msg += ' — su contenido se agregó al ticket para que el agente lo use al generar el plan'
+      }
+      setMessage(msg)
+      // Limpia el input para permitir re-subir el mismo archivo.
+      setFile(null)
+      if (inputRef.current) inputRef.current.value = ''
+      // Re-fetch del ticket para ver el body actualizado por el backend.
+      await onUploaded()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al subir el archivo')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <div>
+      <h3 className="mb-1.5 text-sm font-medium text-muted-foreground">Adjuntar archivo</h3>
+      <div className="flex flex-col gap-2 rounded-[10px] border border-border bg-background px-3 py-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <input
+            ref={inputRef}
+            type="file"
+            onChange={(e) => {
+              setFile(e.target.files?.[0] ?? null)
+              setMessage(null)
+              setError(null)
+            }}
+            disabled={uploading}
+            className="min-w-0 flex-1 text-sm text-foreground file:mr-3 file:rounded-[8px] file:border file:border-border file:bg-card file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-accent"
+          />
+          <Button
+            type="button"
+            size="sm"
+            onClick={submit}
+            disabled={uploading || !file}
+            className="shrink-0"
+          >
+            {uploading ? 'Subiendo…' : 'Subir archivo'}
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Sube el plan o el ticket como archivo (.md, .txt, .json…) y el agente lo leerá para armar
+          las fases.
+        </p>
+        {message && <p className="text-xs text-state-working-fg">{message}</p>}
+        {error && <p className="text-xs text-state-error-fg">{error}</p>}
+      </div>
+    </div>
   )
 }
 

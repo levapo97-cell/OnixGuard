@@ -70,6 +70,35 @@ export async function createTicket(title: string, body: string): Promise<{ id: s
   return (await res.json()) as { id: string }
 }
 
+// Resultado de subir un adjunto: POST /api/tickets/{id}/attachment
+export interface UploadAttachmentResult {
+  ok: boolean
+  filename?: string
+  ingested_text?: boolean
+  error?: string
+}
+
+// Sube un archivo adjunto al ticket vía multipart/form-data (campo "file").
+// Importante: NO fijamos Content-Type manual para que el navegador establezca
+// el boundary multipart automáticamente.
+export async function uploadAttachment(
+  ticketId: string,
+  file: File,
+): Promise<UploadAttachmentResult> {
+  const form = new FormData()
+  form.append('file', file)
+  const res = await fetch(
+    new URL(`/api/tickets/${ticketId}/attachment`, GATEWAY_URL).toString(),
+    {
+      method: 'POST',
+      headers: { ...authHeaders() },
+      body: form,
+    },
+  )
+  if (res.status === 401) handleUnauthorized()
+  return (await res.json()) as UploadAttachmentResult
+}
+
 // Color del chip por ESTADO del ticket (tokens §10).
 export function ticketStatusClasses(status: string): string {
   switch (status) {
